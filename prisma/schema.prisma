@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id          Int      @id @default(autoincrement())
+  annualRate  Float    @default(15.0) // Annual interest rate in percentage
+  buyStep     Float    @default(3.5)  // Buy step in percentage
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Stock {
+  id           Int           @id @default(autoincrement())
+  symbol       String        @unique // e.g., "002027"
+  name         String        // e.g., "分众传媒"
+  annualRate   Float?        // Overrides global setting if present
+  buyStep      Float?        // Overrides global setting if present
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  stockId     Int
+  stock       Stock    @relation(fields: [stockId], references: [id])
+  
+  type        String   // "BUY" or "SELL"
+  price       Float
+  quantity    Int
+  date        DateTime @default(now())
+  
+  // For tracking the "chain" of trades
+  relatedTransactionId Int? // If this is a SELL, which BUY does it close?
+  
+  isVirtual   Boolean  @default(false) // For the "Virtual Trading" feature
+  status      String   @default("OPEN") // OPEN (holding), CLOSED (sold)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
