@@ -18,7 +18,7 @@ export function RefreshButton() {
         <button
             onClick={handleRefresh}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            title="Refresh Data"
+            title="刷新数据"
         >
             <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
         </button>

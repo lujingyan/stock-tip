@@ -25,16 +25,16 @@ export function StatisticsModal() {
                 <BarChart3 className="w-5 h-5" />
             </button>
 
-            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Realized Profit (FIFO)">
+            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="已实现收益 (FIFO)">
                 {!stats ? (
-                    <div className="p-4 text-center text-gray-500">Loading...</div>
+                    <div className="p-4 text-center text-gray-500">加载中...</div>
                 ) : (
                     <div className="space-y-6">
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">Monthly</h3>
+                            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">月度收益</h3>
                             <div className="space-y-2">
                                 {Object.entries(stats.monthlyStats).length === 0 ? (
-                                    <div className="text-sm text-gray-400 italic">No realized profit yet</div>
+                                    <div className="text-sm text-gray-400 italic">暂无已实现收益</div>
                                 ) : (
                                     Object.entries(stats.monthlyStats).map(([month, amount]) => (
                                         <div key={month} className="flex justify-between items-center text-sm">
@@ -49,10 +49,10 @@ export function StatisticsModal() {
                         </div>
 
                         <div>
-                            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">Yearly</h3>
+                            <h3 className="text-sm font-semibold text-gray-500 mb-2 uppercase tracking-wider">年度收益</h3>
                             <div className="space-y-2">
                                 {Object.entries(stats.yearlyStats).length === 0 ? (
-                                    <div className="text-sm text-gray-400 italic">No realized profit yet</div>
+                                    <div className="text-sm text-gray-400 italic">暂无已实现收益</div>
                                 ) : (
                                     Object.entries(stats.yearlyStats).map(([year, amount]) => (
                                         <div key={year} className="flex justify-between items-center text-sm">
@@ -67,9 +67,9 @@ export function StatisticsModal() {
                         </div>
 
                         <p className="text-xs text-gray-400 mt-4">
-                            * Profit is calculated using FIFO (First-In-First-Out) method.
-                            Only fully closed positions (Buy + Sell pairs) contribute to these figures.
-                            Unsold holdings are not included.
+                            * 收益计算采用先进先出 (FIFO) 原则。
+                            仅统计已完全平仓（买入+卖出配对）的交易。
+                            未卖出的持仓不计入统计。
                         </p>
                     </div>
                 )}

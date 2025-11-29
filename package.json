@@ -6,16 +6,22 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "db:backup": "ts-node --compiler-options '{\"module\":\"commonjs\"}' scripts/backup.ts",
+    "db:restore": "ts-node --compiler-options '{\"module\":\"commonjs\"}' scripts/restore.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "jose": "^6.1.2",
     "lucide-react": "^0.554.0",
     "next": "16.0.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "recharts": "^3.5.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {

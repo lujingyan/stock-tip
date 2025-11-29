@@ -39,7 +39,7 @@ export function StockSearch() {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search stock (e.g., 600000 or fzcm)"
+                    placeholder="搜索股票 (如 600519 或 茅台)"
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none"
                 />
             </div>

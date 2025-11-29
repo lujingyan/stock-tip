@@ -1,62 +1,60 @@
-import { getDashboardData } from '@/lib/actions';
+import { getDashboardData, logoutAction } from '@/lib/actions';
 import { StockSearch } from '@/components/StockSearch';
-import { StockCard } from '@/components/StockCard';
+import { StockTable } from '@/components/StockTable';
 import { SettingsDialog } from '@/components/SettingsDialog';
 import { StatisticsModal } from '@/components/StatisticsModal';
+import { CheckDividendsButton } from '@/components/CheckDividendsButton';
 import { RefreshButton } from '@/components/RefreshButton';
-import { TrendingUp } from 'lucide-react';
-import { DashboardStock } from '@/types';
+import { DividendAutoChecker } from '@/components/DividendAutoChecker';
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic'; // Ensure we always get fresh data
+import { TodaysTransactions } from '@/components/TodaysTransactions';
+
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const { stocks, settings } = await getDashboardData();
+  const data = await getDashboardData();
+
+  if (!data) {
+    redirect('/login');
+  }
+
+  const { settings, stocks } = data;
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 md:p-12">
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
+      <DividendAutoChecker />
       <div className="max-w-7xl mx-auto space-y-8">
-
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-600/20">
-              <TrendingUp className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">Stock Trading Tips</h1>
-              <p className="text-sm text-gray-500">
-                Rate: {settings.annualRate}% | Step: {settings.buyStep}%
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <StockSearch />
-            <RefreshButton />
-            <SettingsDialog />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            A股交易助手
+          </h1>
+          <div className="flex items-center gap-4">
             <StatisticsModal />
+            <SettingsDialog settings={settings} />
+            <CheckDividendsButton />
+            <RefreshButton />
+            <form action={logoutAction}>
+              <button type="submit" className="text-sm text-red-600 hover:text-red-800 font-medium">
+                退出登录
+              </button>
+            </form>
           </div>
         </div>
 
-        {/* Content */}
-        {stocks.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="inline-block p-6 rounded-full bg-gray-100 dark:bg-gray-900 mb-4">
-              <TrendingUp className="w-12 h-12 text-gray-400" />
-            </div>
-            <h2 className="text-xl font-semibold mb-2">No stocks tracked yet</h2>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Search for a stock above (e.g., "600519" or "Moutai") to start tracking prices and getting trading tips.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {stocks.map((stock: DashboardStock) => (
-              // @ts-ignore - Date serialization issue from Server Actions to Client Component
-              <StockCard key={stock.id} stock={stock as any} />
-            ))}
-          </div>
-        )}
+        {/* Search */}
+        <div className="w-full max-w-2xl mx-auto">
+          <StockSearch />
+        </div>
+
+        {/* Stock Table */}
+        <div className="w-full">
+          <StockTable stocks={stocks} settings={settings} />
+        </div>
+
+        {/* Today's Activity Section */}
+        <TodaysTransactions activity={data.todaysActivity} />
       </div>
     </main>
   );

@@ -3,12 +3,23 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  stocks    Stock[]
+  settings  Settings[]
+  createdAt DateTime @default(now())
 }
 
 model Settings {
   id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
   annualRate  Float    @default(15.0) // Annual interest rate in percentage
   buyStep     Float    @default(3.5)  // Buy step in percentage
   createdAt   DateTime @default(now())
@@ -17,19 +28,25 @@ model Settings {
 
 model Stock {
   id           Int           @id @default(autoincrement())
-  symbol       String        @unique // e.g., "002027"
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id])
+  symbol       String        // Removed @unique because different users can hold same stock
   name         String        // e.g., "分众传媒"
-  annualRate   Float?        // Overrides global setting if present
-  buyStep      Float?        // Overrides global setting if present
-  transactions Transaction[]
+  annualRate       Float?        // Overrides global setting if present
+  buyStep          Float?        // Overrides global setting if present
+  maxInvestment    Float?        // Optional max investment limit
+  lastDividendDate DateTime?     // The date of the last applied dividend
+  transactions     Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  @@unique([userId, symbol]) // Ensure a user can only add a stock once
 }
 
 model Transaction {
   id          Int      @id @default(autoincrement())
   stockId     Int
-  stock       Stock    @relation(fields: [stockId], references: [id])
+  stock       Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
   
   type        String   // "BUY" or "SELL"
   price       Float

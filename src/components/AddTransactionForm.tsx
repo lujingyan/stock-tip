@@ -41,26 +41,26 @@ export function AddTransactionForm({ stockId, initialPrice, onSuccess }: AddTran
                     type="button"
                     onClick={() => setType('BUY')}
                     className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'BUY'
-                            ? 'bg-red-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                         }`}
                 >
-                    Buy (买入)
+                    买入
                 </button>
                 <button
                     type="button"
                     onClick={() => setType('SELL')}
                     className={`flex-1 py-2 rounded-lg font-medium transition-colors ${type === 'SELL'
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                         }`}
                 >
-                    Sell (卖出)
+                    卖出
                 </button>
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-1">Price (价格)</label>
+                <label className="block text-sm font-medium mb-1">价格</label>
                 <input
                     type="number"
                     step="0.01"
@@ -72,7 +72,7 @@ export function AddTransactionForm({ stockId, initialPrice, onSuccess }: AddTran
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-1">Quantity (数量)</label>
+                <label className="block text-sm font-medium mb-1">数量</label>
                 <input
                     type="number"
                     step="100"
@@ -84,7 +84,7 @@ export function AddTransactionForm({ stockId, initialPrice, onSuccess }: AddTran
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-1">Date (日期)</label>
+                <label className="block text-sm font-medium mb-1">日期</label>
                 <input
                     type="date"
                     required
@@ -103,7 +103,7 @@ export function AddTransactionForm({ stockId, initialPrice, onSuccess }: AddTran
                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <label htmlFor="isVirtual" className="text-sm text-gray-700 dark:text-gray-300">
-                    Virtual Trade (虚拟买卖 - Raise Base Price)
+                    虚拟交易 (做T - 提高成本价)
                 </label>
             </div>
 
@@ -112,7 +112,7 @@ export function AddTransactionForm({ stockId, initialPrice, onSuccess }: AddTran
                 disabled={loading}
                 className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
             >
-                {loading ? 'Saving...' : 'Save Transaction'}
+                {loading ? '保存中...' : '保存交易'}
             </button>
         </form>
     );

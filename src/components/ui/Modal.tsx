@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -12,19 +13,30 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
     const dialogRef = useRef<HTMLDialogElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         const dialog = dialogRef.current;
         if (!dialog) return;
 
         if (isOpen) {
-            dialog.showModal();
+            if (!dialog.open) {
+                dialog.showModal();
+            }
         } else {
-            dialog.close();
+            if (dialog.open) {
+                dialog.close();
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, mounted]);
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <dialog
             ref={dialogRef}
             className="backdrop:bg-black/50 backdrop:backdrop-blur-sm rounded-lg shadow-xl p-0 w-full max-w-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
@@ -42,6 +54,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             <div className="p-4">
                 {children}
             </div>
-        </dialog>
+        </dialog>,
+        document.body
     );
 }
