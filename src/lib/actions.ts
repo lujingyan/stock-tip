@@ -568,61 +568,59 @@ export async function getStatistics() {
     const userId = await getSession();
     if (!userId) return { monthlyStats: {}, yearlyStats: {} };
 
-    const allTxs = await prisma.transaction.findMany({
-        where: {
-            stock: { userId },
+    const settings = await getSettings();
+
+    const stocks = await prisma.stock.findMany({
+        where: { userId },
+        include: {
+            transactions: {
+                orderBy: { date: 'asc' },
+            },
         },
-        orderBy: { date: 'asc' },
     });
 
     const monthlyStats: Record<string, number> = {};
     const yearlyStats: Record<string, number> = {};
 
-    const txsByStock: Record<number, typeof allTxs> = {};
-    for (const tx of allTxs) {
-        if (!txsByStock[tx.stockId]) {
-            txsByStock[tx.stockId] = [];
-        }
-        txsByStock[tx.stockId].push(tx);
-    }
-
     // Fee Constants
     const FIXED_COMMISSION = 1;
     const STAMP_DUTY_RATE = 0.00055;
 
-    for (const stockId in txsByStock) {
-        const txs = txsByStock[stockId];
-        // We need to track original quantities for fee prorating
-        const buyQueue: { id: number; price: number; quantity: number; originalQuantity: number; date: Date }[] = [];
+    for (const stock of stocks) {
+        const txs = stock.transactions;
+        const effectiveAnnualRate = stock.annualRate ?? settings?.annualRate ?? 15;
+
+        // Track open buys for this stock
+        // We need to track original quantities for fee prorating if needed, 
+        // but for "Lowest Target Price" strategy, we match against available open buys at that point in time.
+        // We simulate the history.
+        let openBuys: { id: number; price: number; quantity: number; originalQuantity: number; date: Date; targetPrice: number }[] = [];
 
         for (const tx of txs) {
             if (tx.type === 'BUY') {
-                buyQueue.push({
+                openBuys.push({
                     id: tx.id,
                     price: tx.price,
                     quantity: tx.quantity,
                     originalQuantity: tx.quantity,
                     date: tx.date,
+                    targetPrice: calculateSellPrice(tx.price, new Date(tx.date), effectiveAnnualRate)
                 });
             } else if (tx.type === 'SELL') {
                 let quantityToSell = tx.quantity;
                 let realizedProfit = 0;
 
-                // Note: getStatistics currently uses FIFO (buyQueue[0]).
-                // To be consistent with Dashboard, we should probably use "Lowest Target Price" matching?
-                // However, `getStatistics` doesn't have easy access to `settings` or `stock.annualRate` inside this loop efficiently without fetching.
-                // And `getStatistics` is usually for historical P&L where FIFO is standard accounting.
-                // The user asked "In the harvest details...".
-                // But also "In the statistics... please use profit after fees".
-                // If I switch stats to "Lowest Target Price", it might change historical numbers significantly.
-                // The user's request for "Lowest Target Price" was specifically for "Today's Harvest" matching (Sany example).
-                // I will stick to FIFO for `getStatistics` for now unless requested, but I WILL apply the FEES.
-                // Actually, if I use FIFO here and Lowest Target there, the "Today's Profit" might not match "Monthly Profit" if I sum them up.
-                // But `getStatistics` is a separate aggregation.
-                // Let's stick to FIFO for stats to keep it simple and standard, but add fees.
+                // Strategy: Match with BUYs having the LOWEST Target Price
+                // Sort open buys by Target Price ASC
+                openBuys.sort((a, b) => a.targetPrice - b.targetPrice);
 
-                while (quantityToSell > 0 && buyQueue.length > 0) {
-                    const matchBuy = buyQueue[0];
+                // Match
+                // We need to iterate through a copy or handle index carefully because we might remove items
+                // Actually, we can just iterate and remove/update as we go.
+                // Since we sorted, we just take from the start.
+
+                while (quantityToSell > 0 && openBuys.length > 0) {
+                    const matchBuy = openBuys[0]; // Lowest target price
                     const quantityMatched = Math.min(quantityToSell, matchBuy.quantity);
 
                     const buyCost = matchBuy.price * quantityMatched;
@@ -640,8 +638,9 @@ export async function getStatistics() {
 
                     quantityToSell -= quantityMatched;
                     matchBuy.quantity -= quantityMatched;
+
                     if (matchBuy.quantity === 0) {
-                        buyQueue.shift();
+                        openBuys.shift(); // Remove fully closed buy
                     }
                 }
 

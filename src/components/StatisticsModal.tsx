@@ -25,7 +25,7 @@ export function StatisticsModal() {
                 <BarChart3 className="w-5 h-5" />
             </button>
 
-            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="已实现收益 (FIFO)">
+            <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="已实现收益 (收割统计)">
                 {!stats ? (
                     <div className="p-4 text-center text-gray-500">加载中...</div>
                 ) : (
@@ -67,7 +67,7 @@ export function StatisticsModal() {
                         </div>
 
                         <p className="text-xs text-gray-400 mt-4">
-                            * 收益计算采用先进先出 (FIFO) 原则。
+                            * 收益计算采用“最低目标价优先”原则，与首页“收割”逻辑一致。
                             仅统计已完全平仓（买入+卖出配对）的交易。
                             未卖出的持仓不计入统计。
                         </p>
