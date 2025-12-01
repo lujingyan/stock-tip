@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: stock-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/stock_db?schema=public
+      - JWT_SECRET=${JWT_SECRET:-default_secret_please_change}
+    depends_on:
+      - db
+    networks:
+      - stock-network
+
+  db:
+    container_name: stock-db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=stock_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - stock-network
+
+networks:
+  stock-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
